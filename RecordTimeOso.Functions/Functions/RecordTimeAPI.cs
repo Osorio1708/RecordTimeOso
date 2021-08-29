@@ -22,10 +22,9 @@ namespace RecordTimeOso.Functions.Functions
             [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
             ILogger log)
         {
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             RecordTime recordTime = JsonConvert.DeserializeObject<RecordTime>(requestBody);
-            log.LogInformation($"New Record Time recieved.");
+            log.LogInformation("New Record Time recieved.");
 
             if (recordTime.IdEmployee <= 0)
             {
@@ -38,87 +37,58 @@ namespace RecordTimeOso.Functions.Functions
                 });
             }
 
-            TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
-            TableQuerySegment<RecordTimeEntity> tableRecordTime = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
-            int conutRecord = 0;
-
-            foreach (RecordTimeEntity RT in tableRecordTime)
-            {
-                if (RT.IdEmployee == recordTime.IdEmployee)
-                {
-                    conutRecord++;
-                }
-            }
-
-            if (conutRecord == 0)
-            {
-                RecordTimeEntity recordTimeEntity = new RecordTimeEntity
-                {
-
-                    ETag = "*",
-                    PartitionKey = "RecordTime",
-                    RowKey = Guid.NewGuid().ToString(),
-
-                    IdEmployee = recordTime.IdEmployee,
-                    TimeRecorded = DateTime.UtcNow,
-                    RecordTipe = 0,
-                    Consolidated = false,
-
-                };
-
-                TableOperation addOperation = TableOperation.Insert(recordTimeEntity);
-                await RecordTimeTable.ExecuteAsync(addOperation);
-
-                return new OkObjectResult(new Response
-                {
-                    IsSuccess = true,
-                    Message = "Entry has been registered",
-                    Result = recordTime
-                });
-            }
-            else if (conutRecord == 1)
-            {
-                RecordTimeEntity recordTimeEntity = new RecordTimeEntity
-                {
-
-                    ETag = "*",
-                    PartitionKey = "RecordTime",
-                    RowKey = Guid.NewGuid().ToString(),
-
-                    IdEmployee = recordTime.IdEmployee,
-                    TimeRecorded = DateTime.UtcNow,
-                    RecordTipe = 1,
-                    Consolidated = false,
-
-                };
-
-                TableOperation addOperation = TableOperation.Insert(recordTimeEntity);
-                await RecordTimeTable.ExecuteAsync(addOperation);
-                recordTime.RecordTipe =  1;
-                return new OkObjectResult(new Response
-                {
-                    IsSuccess = true,
-                    Message = "Check out has been registered",
-                    Result = recordTime
-                });
-            }
-            else if (conutRecord > 1)
+            if (recordTime.RecordTipe != 0 && recordTime.RecordTipe != 1 )
             {
                 return new BadRequestObjectResult(new Response
                 {
 
                     IsSuccess = false,
-                    Message = "Only 2 Record Times per Day"
+                    Message = $"The RecordTipe must be 0 or 1 {recordTime.RecordTipe}"
 
                 });
             }
-            return new BadRequestObjectResult(new Response
+
+            TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
+            TableQuerySegment<RecordTimeEntity> tableRecordTime = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
+            foreach (RecordTimeEntity RT in tableRecordTime)
+            {
+                if (RT.IdEmployee == recordTime.IdEmployee && RT.RecordTipe == recordTime.RecordTipe)
+                {
+                    return new BadRequestObjectResult(new Response
+                    {
+
+                        IsSuccess = false,
+                        Message = "This record has already been taken"
+
+                    });
+                }
+            }
+
+            RecordTimeEntity recordTimeEntity = new RecordTimeEntity
             {
 
-                IsSuccess = false,
-                Message = "Error"
+                ETag = "*",
+                PartitionKey = "RecordTime",
+                RowKey = Guid.NewGuid().ToString(),
 
+                IdEmployee = recordTime.IdEmployee,
+                TimeRecorded = DateTime.UtcNow,
+                RecordTipe = recordTime.RecordTipe,
+                Consolidated = false,
+
+            };
+
+            TableOperation addOperation = TableOperation.Insert(recordTimeEntity);
+            await RecordTimeTable.ExecuteAsync(addOperation);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = "Record Time Saved",
+                Result = recordTime
             });
+
         }
+
     }
 }

@@ -9,6 +9,6 @@ namespace RecordTimeOso.Common.Models
         public int IdEmployee { get; set; }
         public DateTime TimeRecorded { get; set; }
         public int RecordTipe { get; set; }
-        public bool CoConsolidated { get; set; }
+        public bool Consolidated { get; set; }
     }
 }
