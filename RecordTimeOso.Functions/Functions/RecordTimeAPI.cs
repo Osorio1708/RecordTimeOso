@@ -156,13 +156,13 @@ namespace RecordTimeOso.Functions.Functions
         [FunctionName(nameof(GetAllRecordTime))]
         public static async Task<IActionResult> GetAllRecordTime(
           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "RecordTime")] HttpRequest req,
-          [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable toDoTable,
+          [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
           ILogger log)
         {
             log.LogInformation("Get all Record Time received.");
 
             TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
-            TableQuerySegment<RecordTimeEntity> recordTimeEntity = await toDoTable.ExecuteQuerySegmentedAsync(query, null);
+            TableQuerySegment<RecordTimeEntity> recordTimeEntity = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
 
             string message = "Retrieved all Record Time.";
             log.LogInformation(message);
@@ -175,5 +175,70 @@ namespace RecordTimeOso.Functions.Functions
             });
         }
 
+        [FunctionName(nameof(GetRecordTimeById))]
+        public static IActionResult GetRecordTimeById(
+           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "RecordTime/{id}")] HttpRequest req,
+           [Table("RecordTime", "RecordTime", "{id}", Connection = "AzureWebJobsStorage")] RecordTimeEntity recordTimeEntity,
+           string id,
+           ILogger log)
+        {
+            log.LogInformation($"Get ToDo by id {id},  recived. ");
+
+            if (recordTimeEntity == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+
+                    IsSuccess = false,
+                    Message = "Record Time not found."
+
+                });
+            }
+
+            string message = $"Record Time: {id}, retrieved.";
+            log.LogInformation(message);
+
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = recordTimeEntity
+            });
+        }
+
+        [FunctionName(nameof(DeleteRecordTime))]
+        public static async Task<IActionResult> DeleteRecordTime(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "RecordTime/{id}")] HttpRequest req,
+            [Table("RecordTime", "RecordTime", "{id}", Connection = "AzureWebJobsStorage")] RecordTimeEntity recordTimeEntity,
+            [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
+            string id,
+            ILogger log)
+        {
+            log.LogInformation($"Delete ToDo: {id}, recived.");
+
+            if (recordTimeEntity == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+
+                    IsSuccess = false,
+                    Message = "Record Time not found."
+
+                });
+            }
+
+            await RecordTimeTable.ExecuteAsync(TableOperation.Delete(recordTimeEntity));
+            string message = $"Record Time: {id}, deleted.";
+            log.LogInformation(message);
+
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = recordTimeEntity
+            });
+        }
     }
 }
