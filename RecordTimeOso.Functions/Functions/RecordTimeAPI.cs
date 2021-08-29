@@ -37,13 +37,13 @@ namespace RecordTimeOso.Functions.Functions
                 });
             }
 
-            if (recordTime.RecordTipe != 0 && recordTime.RecordTipe != 1 )
+            if (recordTime.RecordTipe != 0 && recordTime.RecordTipe != 1)
             {
                 return new BadRequestObjectResult(new Response
                 {
 
                     IsSuccess = false,
-                    Message = $"The RecordTipe must be 0 or 1 {recordTime.RecordTipe}"
+                    Message = $"The RecordTipe must be 0 or 1"
 
                 });
             }
@@ -72,7 +72,7 @@ namespace RecordTimeOso.Functions.Functions
                 RowKey = Guid.NewGuid().ToString(),
 
                 IdEmployee = recordTime.IdEmployee,
-                TimeRecorded = DateTime.UtcNow,
+                TimeRecorded = recordTime.TimeRecorded,
                 RecordTipe = recordTime.RecordTipe,
                 Consolidated = false,
 
@@ -88,6 +88,91 @@ namespace RecordTimeOso.Functions.Functions
                 Result = recordTime
             });
 
+        }
+
+        [FunctionName(nameof(UpdateRecordTime))]
+        public static async Task<IActionResult> UpdateRecordTime(
+         [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "RecordTime/{id}")] HttpRequest req,
+         [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
+         string id,
+         ILogger log)
+        {
+            log.LogInformation($"Update for RecordTime: {id}, received");
+
+            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            RecordTime recordTime = JsonConvert.DeserializeObject<RecordTime>(requestBody);
+
+            TableOperation findOperation = TableOperation.Retrieve<RecordTimeEntity>("RecordTime", id);
+            TableResult findResult = await RecordTimeTable.ExecuteAsync(findOperation);
+            if (findResult.Result == null)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+
+                    IsSuccess = false,
+                    Message = "Record Time not found."
+
+                });
+            }
+
+            if (recordTime.IdEmployee <= 0)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+
+                    IsSuccess = false,
+                    Message = "The IdEmployee must be positive and greater than 0"
+
+                });
+            }
+            if (recordTime.RecordTipe != 0 && recordTime.RecordTipe != 1)
+            {
+                return new BadRequestObjectResult(new Response
+                {
+
+                    IsSuccess = false,
+                    Message = "The RecordTipe must be 0 or 1"
+
+                });
+            }
+            RecordTimeEntity recordTimeEntity = (RecordTimeEntity)findResult.Result;
+            recordTimeEntity.IdEmployee = recordTime.IdEmployee;
+            recordTimeEntity.RecordTipe = recordTime.RecordTipe;
+            recordTimeEntity.TimeRecorded = recordTime.TimeRecorded;
+            TableOperation addOperation = TableOperation.Replace(recordTimeEntity);
+            await RecordTimeTable.ExecuteAsync(addOperation);
+
+            string message = $"Record Time: {id}, updated in table.";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = recordTime
+            });
+        }
+
+        [FunctionName(nameof(GetAllRecordTime))]
+        public static async Task<IActionResult> GetAllRecordTime(
+          [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "RecordTime")] HttpRequest req,
+          [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable toDoTable,
+          ILogger log)
+        {
+            log.LogInformation("Get all Record Time received.");
+
+            TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
+            TableQuerySegment<RecordTimeEntity> recordTimeEntity = await toDoTable.ExecuteQuerySegmentedAsync(query, null);
+
+            string message = "Retrieved all Record Time.";
+            log.LogInformation(message);
+
+            return new OkObjectResult(new Response
+            {
+                IsSuccess = true,
+                Message = message,
+                Result = recordTimeEntity
+            });
         }
 
     }
