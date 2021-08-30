@@ -62,7 +62,7 @@ namespace RecordTimeOso.Functions.Functions
                         PartitionKey = "RecordTime",
                         RowKey = Guid.NewGuid().ToString(),
                         IdEmployee = startTime.IdEmployee,
-                        WorkedHours = TP.Hours,
+                        WorkedMinutes = TP.Hours,
                         DiffTime = TP.ToString(),
                         startTime = startTime.TimeRecorded,
                         EndTime = endTime.TimeRecorded
