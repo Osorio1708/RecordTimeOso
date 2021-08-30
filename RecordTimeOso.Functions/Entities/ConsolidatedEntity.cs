@@ -9,7 +9,7 @@ namespace RecordTimeOso.Functions.Entities
 
         public int WorkedHours { get; set; }
 
-        public TimeSpan diffTime { get; set; }
+        public String DiffTime { get; set; }
 
         public DateTime startTime { get; set; }
 

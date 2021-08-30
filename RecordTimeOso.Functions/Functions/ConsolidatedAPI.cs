@@ -53,7 +53,7 @@ namespace RecordTimeOso.Functions.Functions
                 {
                     TableOperation addOperation;
                     TimeSpan TP = endTime.TimeRecorded - startTime.TimeRecorded;
-                    log.LogInformation($"{TP}");
+                   
                     endTime.Consolidated = true;
                     startTime.Consolidated = true;
                     addOperation = TableOperation.Replace(endTime);
@@ -67,13 +67,13 @@ namespace RecordTimeOso.Functions.Functions
                         RowKey = Guid.NewGuid().ToString(),
                         IdEmployee = startTime.IdEmployee,
                         WorkedHours = TP.Hours,
-                        diffTime = TP,
+                        DiffTime = TP.ToString(),
                         startTime = startTime.TimeRecorded,
                         EndTime = endTime.TimeRecorded
                     };
                     addOperation = TableOperation.Insert(consolidatedEntity);
                     await ConsolidatedTable.ExecuteAsync(addOperation);
-
+                    log.LogInformation("Consolidated Finish.");
                 }
             }
             return new OkObjectResult(new Response
