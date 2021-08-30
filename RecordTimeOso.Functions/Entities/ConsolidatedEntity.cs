@@ -7,7 +7,7 @@ namespace RecordTimeOso.Functions.Entities
     {
         public int IdEmployee { get; set; }
 
-        public int WorkedHours { get; set; }
+        public Double WorkedMinutes { get; set; }
 
         public String DiffTime { get; set; }
 

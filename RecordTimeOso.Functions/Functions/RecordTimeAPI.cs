@@ -48,6 +48,7 @@ namespace RecordTimeOso.Functions.Functions
                 });
             }
 
+            /*
             TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
             TableQuerySegment<RecordTimeEntity> tableRecordTime = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
             foreach (RecordTimeEntity RT in tableRecordTime)
@@ -63,6 +64,7 @@ namespace RecordTimeOso.Functions.Functions
                     });
                 }
             }
+            */
 
             RecordTimeEntity recordTimeEntity = new RecordTimeEntity
             {

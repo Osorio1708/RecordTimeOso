@@ -1,27 +1,22 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
-using RecordTimeOso.Common.Responses;
 using RecordTimeOso.Functions.Entities;
-using System;
-using System.Collections;
-using System.Threading.Tasks;
 
 namespace RecordTimeOso.Functions.Functions
 {
-    public static class ConsolidatedAPI
+    public static class ScheduleFunction
     {
-        [FunctionName(nameof(GenerateConsolidated))]
-        public static async Task<IActionResult> GenerateConsolidated(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "Consolidated")] HttpRequest req,
+        [FunctionName("ScheduleFunction")]
+
+        public static async Task RunAsync([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer,
             [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
             [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
             ILogger log)
         {
-
             TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
             TableQuerySegment<RecordTimeEntity> tableRecordTime = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
             log.LogInformation("New Consolidated requested.");
@@ -54,7 +49,7 @@ namespace RecordTimeOso.Functions.Functions
                 {
                     TableOperation addOperation;
                     TimeSpan TP = endTime.TimeRecorded - startTime.TimeRecorded;
-                   
+
                     endTime.Consolidated = true;
                     startTime.Consolidated = true;
                     addOperation = TableOperation.Replace(endTime);
@@ -67,51 +62,16 @@ namespace RecordTimeOso.Functions.Functions
                         PartitionKey = "RecordTime",
                         RowKey = Guid.NewGuid().ToString(),
                         IdEmployee = startTime.IdEmployee,
-                        WorkedMinutes = TP.TotalMinutes,
+                        WorkedHours = TP.Hours,
                         DiffTime = TP.ToString(),
                         startTime = startTime.TimeRecorded,
                         EndTime = endTime.TimeRecorded
                     };
                     addOperation = TableOperation.Insert(consolidatedEntity);
                     await ConsolidatedTable.ExecuteAsync(addOperation);
-                    log.LogInformation("Consolidated Finish.");
+                    log.LogInformation($"Consolidated Finish.");
                 }
             }
-            return new OkObjectResult(new Response
-            {
-                IsSuccess = true,
-                Message = "Consolidated Succesfuly"
-            });
-        }
-
-        [FunctionName(nameof(GetConsolidatedByDate))]
-        public static async Task<IActionResult> GetConsolidatedByDate(
-           [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Consolidated/{date}")] HttpRequest req,
-           [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
-           string date,
-           ILogger log)
-        {
-            String dateStart = date + " 00:00";
-            String dateEnd = date + " 23:59";
-            DateTime dateTimeStart = DateTime.Parse(dateStart);
-            DateTime dateTimeEnd = DateTime.Parse(dateEnd);
-            log.LogInformation($"Get Consolidte by Date {dateTimeStart} - {dateTimeEnd},  recived. ");
-            TableQuery<ConsolidatedEntity> query = new TableQuery<ConsolidatedEntity>();
-            TableQuerySegment<ConsolidatedEntity> consolidatedEntityTable = await ConsolidatedTable.ExecuteQuerySegmentedAsync(query, null);
-            ArrayList printConsolidated = new ArrayList();
-            foreach(ConsolidatedEntity CE in consolidatedEntityTable)
-            {
-                if(CE.EndTime >= dateTimeStart && CE.EndTime <= dateTimeEnd)
-                {
-                    printConsolidated.Add(CE);
-                }
-            }
-            return new OkObjectResult(new Response
-            {
-                IsSuccess = true,
-                Message = $"The Consolidated  of Date {date} are:",
-                Result = printConsolidated
-            });
         }
     }
 }
