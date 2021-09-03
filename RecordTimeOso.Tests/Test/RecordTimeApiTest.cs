@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using RecordTimeOso.Common.Models;
+using RecordTimeOso.Functions.Entities;
 using RecordTimeOso.Functions.Functions;
 using RecordTimeOso.Tests.Helpers;
 using System;
@@ -42,6 +43,57 @@ namespace RecordTimeOso.Tests.Test
             OkObjectResult result = (OkObjectResult)response;
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
         }
+        
+        [Fact]
+        public async void DeleteRegister_Should_Return_200()
+        {
 
+            //arrange
+            MockCloudTableRecordTime mockTable = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
+            RecordTime recordTimeRequest = TestFactory.GetRecordTimeRequest();
+            RecordTimeEntity recordTimeEntity = TestFactory.GetRecordTimeEntity();
+            Guid recordTimeId = Guid.NewGuid();
+            DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordTimeRequest);
+
+            //act
+            IActionResult response = await RecordTimeAPI.DeleteRecordTime(request, recordTimeEntity, mockTable, recordTimeId.ToString(), logger);
+
+            //assert
+            OkObjectResult result = (OkObjectResult)response;
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        }
+
+        [Fact]
+        public async void GetAllRegisters_Should_Return_200()
+        {
+            //arrange
+            MockCloudTableRecordTime mockTable = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
+            DefaultHttpRequest request = TestFactory.CreateHttpRequest();
+
+            //act
+            IActionResult response = await RecordTimeAPI.GetAllRecordTime(request, mockTable, logger);
+
+            //assert
+            OkObjectResult result = (OkObjectResult)response;
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        }
+
+        [Fact]
+        public void GetRegisterById_Should_Return_200()
+        {
+
+            //arrange
+            MockCloudTableRecordTime mockTable = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
+            RecordTimeEntity recordTimeEntity = TestFactory.GetRecordTimeEntity();
+            Guid recordTimeId = Guid.NewGuid();
+            DefaultHttpRequest request = TestFactory.CreateHttpRequest();
+
+            //act
+            IActionResult response = RecordTimeAPI.GetRecordTimeById(request, recordTimeEntity, recordTimeId.ToString(), logger);
+
+            //assert
+            OkObjectResult result = (OkObjectResult)response;
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        }
     }
 }
