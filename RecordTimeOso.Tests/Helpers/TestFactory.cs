@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using RecordTimeOso.Common.Models;
 using RecordTimeOso.Functions.Entities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace RecordTimeOso.Tests.Helpers
@@ -25,6 +26,17 @@ namespace RecordTimeOso.Tests.Helpers
                 Consolidated = false
             };
         }
+
+        public static List<RecordTimeEntity> GetRecordTimeEntities()
+        {
+            return new List<RecordTimeEntity>();
+        }
+
+        public static List<RecordTimeEntity> GetConsolidatedEntities()
+        {
+            return new List<RecordTimeEntity>();
+        }
+
 
         public static DefaultHttpRequest CreateHttpRequest(Guid RecordTimeId, RecordTime RecordTimeRequest)
         {

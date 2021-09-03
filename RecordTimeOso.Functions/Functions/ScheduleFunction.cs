@@ -1,25 +1,24 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Table;
 using RecordTimeOso.Functions.Entities;
+using System;
+using System.Threading.Tasks;
 
 namespace RecordTimeOso.Functions.Functions
 {
     public static class ScheduleFunction
     {
-        [FunctionName("ScheduleFunction")]
+        [FunctionName(nameof(RunScheduleConsolidated))]
 
-        public static async Task RunAsync([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer,
+        public static async Task RunScheduleConsolidated([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer,
             [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
             [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
             ILogger log)
         {
             TableQuery<RecordTimeEntity> query = new TableQuery<RecordTimeEntity>();
             TableQuerySegment<RecordTimeEntity> tableRecordTime = await RecordTimeTable.ExecuteQuerySegmentedAsync(query, null);
-            log.LogInformation("New Consolidated requested.");
+            log.LogInformation($"New Consolidated requested. time: {DateTime.Now.TimeOfDay.ToString()}");
             foreach (RecordTimeEntity RT in tableRecordTime)
             {
                 RecordTimeEntity startTime = null;
@@ -69,9 +68,10 @@ namespace RecordTimeOso.Functions.Functions
                     };
                     addOperation = TableOperation.Insert(consolidatedEntity);
                     await ConsolidatedTable.ExecuteAsync(addOperation);
-                    log.LogInformation($"Consolidated Finish.");
+
                 }
             }
+            log.LogInformation($"Consolidated Finish. Time: {DateTime.Now.TimeOfDay.ToString()}");
         }
     }
 }
