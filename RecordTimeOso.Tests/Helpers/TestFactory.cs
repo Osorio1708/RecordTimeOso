@@ -58,7 +58,7 @@ namespace RecordTimeOso.Tests.Helpers
             return new DefaultHttpRequest(new DefaultHttpContext());
         }
 
-        public static RecordTime GetRecordTime()
+        public static RecordTime GetRecordTimeRequest()
         {
             return new RecordTime
             {
