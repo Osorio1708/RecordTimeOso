@@ -6,8 +6,6 @@ using RecordTimeOso.Common.Models;
 using RecordTimeOso.Functions.Functions;
 using RecordTimeOso.Tests.Helpers;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace RecordTimeOso.Tests.Test
@@ -20,11 +18,26 @@ namespace RecordTimeOso.Tests.Test
         public async void CreateTodo_Should_Return_200()
         {
             // Arrange
-            MockCloudTableRecordTime mockRecordTime = new MockCloudTableRecordTime(new Uri(""));
+            MockCloudTableRecordTime mockRecordTime = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
             RecordTime recordTimeRequest = TestFactory.GetRecordTimeRequest();
             DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordTimeRequest);
             //Act
             IActionResult response = await RecordTimeAPI.CreateRecordTime(request, mockRecordTime, logger);
+            //Assert
+            OkObjectResult result = (OkObjectResult)response;
+            Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
+        }
+
+        [Fact]
+        public async void UpdateTodo_Should_Return_200()
+        {
+            // Arrange
+            MockCloudTableRecordTime mockRecordTime = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
+            RecordTime recordTimeRequest = TestFactory.GetRecordTimeRequest();
+            Guid recordTimeId = Guid.NewGuid();
+            DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordTimeId, recordTimeRequest);
+            //Act
+            IActionResult response = await RecordTimeAPI.UpdateRecordTime(request, mockRecordTime, recordTimeId.ToString(), logger);
             //Assert
             OkObjectResult result = (OkObjectResult)response;
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
