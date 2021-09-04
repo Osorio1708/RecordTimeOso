@@ -84,33 +84,32 @@ namespace RecordTimeOso.Functions.Functions
             });
         }
 
-        [FunctionName(nameof(GetConsolidatedByDate))]
-        public static async Task<IActionResult> GetConsolidatedByDate(
+        [FunctionName(nameof(GetConsolidatedByDateAsync))]
+        public static async Task<IActionResult> GetConsolidatedByDateAsync(
            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "Consolidated/{date}")] HttpRequest req,
            [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
            string date,
            ILogger log)
         {
-            String dateStart = date + " 00:00";
-            String dateEnd = date + " 23:59";
-            DateTime dateTimeStart = DateTime.Parse(dateStart);
-            DateTime dateTimeEnd = DateTime.Parse(dateEnd);
-            log.LogInformation($"Get Consolidte by Date {dateTimeStart} - {dateTimeEnd},  recived. ");
+            DateTime dateStart = DateTime.Parse( date + " 00:00");
+            DateTime dateEnd = DateTime.Parse(date + " 23:59");
+            log.LogInformation($"Get Consolidte by Date {dateStart} - {dateEnd},  recived. ");
             TableQuery<ConsolidatedEntity> query = new TableQuery<ConsolidatedEntity>();
             TableQuerySegment<ConsolidatedEntity> consolidatedEntityTable = await ConsolidatedTable.ExecuteQuerySegmentedAsync(query, null);
-            ArrayList printConsolidated = new ArrayList();
-            foreach(ConsolidatedEntity CE in consolidatedEntityTable)
+            ArrayList result = new ArrayList();
+            foreach ( ConsolidatedEntity CE in consolidatedEntityTable)
             {
-                if(CE.EndTime >= dateTimeStart && CE.EndTime <= dateTimeEnd)
+                if(CE.EndTime > dateStart && CE.EndTime < dateEnd)
                 {
-                    printConsolidated.Add(CE);
+                    result.Add(CE);
                 }
             }
+
             return new OkObjectResult(new Response
             {
                 IsSuccess = true,
                 Message = $"The Consolidated  of Date {date} are:",
-                Result = printConsolidated
+                Result = result
             });
         }
     }

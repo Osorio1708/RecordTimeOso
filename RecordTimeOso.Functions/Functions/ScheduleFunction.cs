@@ -29,7 +29,7 @@ namespace RecordTimeOso.Functions.Functions
                 {
                     foreach (RecordTimeEntity RTaux in tableRecordTime)
                     {
-                        if (RT.IdEmployee == RTaux.IdEmployee)
+                        if (RT.IdEmployee == RTaux.IdEmployee && !RTaux.Consolidated)
                         {
                             if (RTaux.RecordTipe == 0 && switchStart == 0)
                             {

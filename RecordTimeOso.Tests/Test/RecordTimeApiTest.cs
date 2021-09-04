@@ -54,10 +54,8 @@ namespace RecordTimeOso.Tests.Test
             RecordTimeEntity recordTimeEntity = TestFactory.GetRecordTimeEntity();
             Guid recordTimeId = Guid.NewGuid();
             DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordTimeRequest);
-
             //act
             IActionResult response = await RecordTimeAPI.DeleteRecordTime(request, recordTimeEntity, mockTable, recordTimeId.ToString(), logger);
-
             //assert
             OkObjectResult result = (OkObjectResult)response;
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
@@ -86,11 +84,9 @@ namespace RecordTimeOso.Tests.Test
             MockCloudTableRecordTime mockTable = new MockCloudTableRecordTime(new Uri("http://127.0.0.1:10002/devstoreaccount1/reports"));
             RecordTimeEntity recordTimeEntity = TestFactory.GetRecordTimeEntity();
             Guid recordTimeId = Guid.NewGuid();
-            DefaultHttpRequest request = TestFactory.CreateHttpRequest();
-
+            DefaultHttpRequest request = TestFactory.CreateHttpRequest(recordTimeId);
             //act
             IActionResult response = RecordTimeAPI.GetRecordTimeById(request, recordTimeEntity, recordTimeId.ToString(), logger);
-
             //assert
             OkObjectResult result = (OkObjectResult)response;
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);

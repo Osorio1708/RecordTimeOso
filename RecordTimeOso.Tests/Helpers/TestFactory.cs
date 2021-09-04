@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using RecordTimeOso.Common.Models;
 using RecordTimeOso.Functions.Entities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -27,14 +28,29 @@ namespace RecordTimeOso.Tests.Helpers
             };
         }
 
+        public static ConsolidatedEntity GetConsolidatedEntity()
+        {
+            return new ConsolidatedEntity
+            {
+                ETag = "*",
+                PartitionKey = "RecordTime",
+                RowKey = Guid.NewGuid().ToString(),
+                IdEmployee = 1,
+                WorkedMinutes = 400,
+                DiffTime = "10:00:00",
+                startTime =  DateTime.Parse("2021-08-15 06:00:00"),
+                EndTime = DateTime.Parse("08 2021-08-15 14:00:00")
+            };
+        }
+
         public static List<RecordTimeEntity> GetRecordTimeEntities()
         {
             return new List<RecordTimeEntity>();
         }
 
-        public static List<RecordTimeEntity> GetConsolidatedEntities()
+        public static List<ConsolidatedEntity> GetConsolidatedEntities()
         {
-            return new List<RecordTimeEntity>();
+            return new List<ConsolidatedEntity>();
         }
 
 
@@ -53,6 +69,14 @@ namespace RecordTimeOso.Tests.Helpers
             return new DefaultHttpRequest(new DefaultHttpContext())
             {
                 Path = $"/{RecordTimeId}"
+            };
+        }
+
+        public static DefaultHttpRequest CreateHttpRequest(String Date)
+        {
+            return new DefaultHttpRequest(new DefaultHttpContext())
+            {
+                Path = $"/{Date}"
             };
         }
 
