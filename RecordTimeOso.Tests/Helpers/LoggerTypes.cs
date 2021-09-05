@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace RecordTimeOso.Tests.Helpers
+﻿namespace RecordTimeOso.Tests.Helpers
 {
     public enum LoggerTypes
     {

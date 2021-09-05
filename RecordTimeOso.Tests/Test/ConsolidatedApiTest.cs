@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using RecordTimeOso.Functions.Entities;
 using RecordTimeOso.Functions.Functions;
 using RecordTimeOso.Tests.Helpers;
 using System;

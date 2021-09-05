@@ -43,7 +43,7 @@ namespace RecordTimeOso.Tests.Test
             OkObjectResult result = (OkObjectResult)response;
             Assert.Equal(StatusCodes.Status200OK, result.StatusCode);
         }
-        
+
         [Fact]
         public async void DeleteRegister_Should_Return_200()
         {

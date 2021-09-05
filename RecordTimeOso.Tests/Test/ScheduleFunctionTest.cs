@@ -1,9 +1,6 @@
 ﻿using RecordTimeOso.Functions.Functions;
 using RecordTimeOso.Tests.Helpers;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace RecordTimeOso.Tests.Test
@@ -23,11 +20,11 @@ namespace RecordTimeOso.Tests.Test
 
             //act
 
-            await ScheduleFunction.RunScheduleConsolidated(null, mockCloudTableRecordTime,mockCloudTableConsolidated,logger);
+            await ScheduleFunction.RunScheduleConsolidated(null, mockCloudTableRecordTime, mockCloudTableConsolidated, logger);
             string message = logger.Logs[1];
 
             //assert
-            
+
             Assert.Contains("Consolidated Finish.", message);
 
         }

@@ -11,7 +11,7 @@ namespace RecordTimeOso.Functions.Functions
     {
         [FunctionName(nameof(RunScheduleConsolidated))]
 
-        public static async Task RunScheduleConsolidated([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer,
+        public static async Task RunScheduleConsolidated([TimerTrigger("0 */59 * * * *")] TimerInfo myTimer,
             [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
             [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
             ILogger log)
@@ -55,20 +55,38 @@ namespace RecordTimeOso.Functions.Functions
                     await RecordTimeTable.ExecuteAsync(addOperation);
                     addOperation = TableOperation.Replace(startTime);
                     await RecordTimeTable.ExecuteAsync(addOperation);
-                    ConsolidatedEntity consolidatedEntity = new ConsolidatedEntity
-                    {
-                        ETag = "*",
-                        PartitionKey = "RecordTime",
-                        RowKey = Guid.NewGuid().ToString(),
-                        IdEmployee = startTime.IdEmployee,
-                        WorkedMinutes = TP.Hours,
-                        DiffTime = TP.ToString(),
-                        startTime = startTime.TimeRecorded,
-                        EndTime = endTime.TimeRecorded
-                    };
-                    addOperation = TableOperation.Insert(consolidatedEntity);
-                    await ConsolidatedTable.ExecuteAsync(addOperation);
 
+                    TableQuery<ConsolidatedEntity> queryC = new TableQuery<ConsolidatedEntity>();
+                    TableQuerySegment<ConsolidatedEntity> consolidated = await ConsolidatedTable.ExecuteQuerySegmentedAsync(queryC, null);
+                    int sw = 0;
+                    foreach (ConsolidatedEntity CE in consolidated)
+                    {
+                        if (CE.EndTime.Day == endTime.TimeRecorded.Day && CE.IdEmployee == endTime.IdEmployee)
+                        {
+                            CE.DiffTime = (TimeSpan.Parse(CE.DiffTime) + TP).ToString();
+                            CE.WorkedMinutes = CE.WorkedMinutes + TP.TotalMinutes;
+                            CE.EndTime = endTime.TimeRecorded;
+                            addOperation = TableOperation.Replace(CE);
+                            await ConsolidatedTable.ExecuteAsync(addOperation);
+                            sw++;
+                        }
+                    }
+                    if (sw == 0)
+                    {
+                        ConsolidatedEntity consolidatedEntity = new ConsolidatedEntity
+                        {
+                            ETag = "*",
+                            PartitionKey = "RecordTime",
+                            RowKey = Guid.NewGuid().ToString(),
+                            IdEmployee = startTime.IdEmployee,
+                            WorkedMinutes = TP.Hours,
+                            DiffTime = TP.ToString(),
+                            startTime = startTime.TimeRecorded,
+                            EndTime = endTime.TimeRecorded
+                        };
+                        addOperation = TableOperation.Insert(consolidatedEntity);
+                        await ConsolidatedTable.ExecuteAsync(addOperation);
+                    }
                 }
             }
             log.LogInformation($"Consolidated Finish. Time: {DateTime.Now.TimeOfDay.ToString()}");

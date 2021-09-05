@@ -6,7 +6,6 @@ using Newtonsoft.Json;
 using RecordTimeOso.Common.Models;
 using RecordTimeOso.Functions.Entities;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
@@ -38,7 +37,7 @@ namespace RecordTimeOso.Tests.Helpers
                 IdEmployee = 1,
                 WorkedMinutes = 400,
                 DiffTime = "10:00:00",
-                startTime =  DateTime.Parse("2021-08-15 06:00:00"),
+                startTime = DateTime.Parse("2021-08-15 06:00:00"),
                 EndTime = DateTime.Parse("08 2021-08-15 14:00:00")
             };
         }
@@ -72,7 +71,7 @@ namespace RecordTimeOso.Tests.Helpers
             };
         }
 
-        public static DefaultHttpRequest CreateHttpRequest(String Date)
+        public static DefaultHttpRequest CreateHttpRequest(string Date)
         {
             return new DefaultHttpRequest(new DefaultHttpContext())
             {
