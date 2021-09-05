@@ -11,7 +11,7 @@ namespace RecordTimeOso.Functions.Functions
     {
         [FunctionName(nameof(RunScheduleConsolidated))]
 
-        public static async Task RunScheduleConsolidated([TimerTrigger("0 */59 * * * *")] TimerInfo myTimer,
+        public static async Task RunScheduleConsolidated([TimerTrigger("0 */2 * * * *")] TimerInfo myTimer,
             [Table("RecordTime", Connection = "AzureWebJobsStorage")] CloudTable RecordTimeTable,
             [Table("Consolidated", Connection = "AzureWebJobsStorage")] CloudTable ConsolidatedTable,
             ILogger log)
@@ -86,7 +86,7 @@ namespace RecordTimeOso.Functions.Functions
                             PartitionKey = "RecordTime",
                             RowKey = Guid.NewGuid().ToString(),
                             IdEmployee = startTime.IdEmployee,
-                            WorkedMinutes = TP.Hours,
+                            WorkedMinutes = TP.TotalMinutes,
                             DiffTime = TP.ToString(),
                             startTime = startTime.TimeRecorded,
                             EndTime = endTime.TimeRecorded
