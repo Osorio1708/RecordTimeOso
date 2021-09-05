@@ -69,6 +69,10 @@ namespace RecordTimeOso.Functions.Functions
                         {
                             CE.DiffTime = (TimeSpan.Parse(CE.DiffTime) + TP).ToString();
                             CE.WorkedMinutes = CE.WorkedMinutes + TP.TotalMinutes;
+                            if (startTime.TimeRecorded < CE.startTime)
+                            {
+                                CE.startTime = startTime.TimeRecorded;
+                            }
                             if (endTime.TimeRecorded > CE.EndTime)
                             {
                                 CE.EndTime = endTime.TimeRecorded;
