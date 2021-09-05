@@ -69,7 +69,10 @@ namespace RecordTimeOso.Functions.Functions
                         {
                             CE.DiffTime = (TimeSpan.Parse(CE.DiffTime) + TP).ToString();
                             CE.WorkedMinutes = CE.WorkedMinutes + TP.TotalMinutes;
-                            CE.EndTime = endTime.TimeRecorded;
+                            if (endTime.TimeRecorded > CE.EndTime)
+                            {
+                                CE.EndTime = endTime.TimeRecorded;
+                            }
                             addOperation = TableOperation.Replace(CE);
                             await ConsolidatedTable.ExecuteAsync(addOperation);
                             sw++;
